@@ -17,6 +17,17 @@ options.register('era','2017-Nov17ReReco',options.multiplicity.singleton,options
 options.register('isMC',False,options.multiplicity.singleton,options.varType.bool," ")
 options.parseArguments()
 
+# initialize MessageLogger and output report
+process.load("FWCore.MessageLogger.MessageLogger_cfi")
+process.MessageLogger.cerr.FwkReport = cms.untracked.PSet(
+    reportEvery = cms.untracked.int32(500),
+    limit = cms.untracked.int32(10000000)
+)
+# set the number of events
+process.maxEvents = cms.untracked.PSet(
+    input = cms.untracked.int32(options.maxEvents)
+)
+
 process.source = cms.Source("PoolSource",
                             fileNames = cms.untracked.vstring(options.inputFiles),  
                           )
