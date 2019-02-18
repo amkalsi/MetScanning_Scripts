@@ -89,9 +89,9 @@ process.egammaOutput = cms.OutputModule("PoolOutputModule",
 process.outPath = cms.EndPath(process.egammaOutput)
 
 residualCorrFileName = None
-if hasattr(process,'calibratedPatElectrons'):
+if options.isMiniAOD:
     residualCorrFileName = process.calibratedPatElectrons.correctionFile.value()
-if hasattr(process,'calibratedElectrons'):
+else:
     residualCorrFileName = process.calibratedElectrons.correctionFile.value()
 msgStr='''EgammaPostRecoTools:
   running with GT: {}
