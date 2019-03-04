@@ -86,13 +86,30 @@ process.egammaOutput = cms.OutputModule("PoolOutputModule",
                                            'keep *_slimmedElectrons*_*_*',
                                            'keep *_slimmedPhotons*_*_*')
                                         )
+if not options.isMiniAOD:
+    process.egammaOutput.outputCommands = cms.untracked.vstring('drop *',
+                                                                'keep *_gedGsfElectrons_*_*',
+                                                                'keep *_gedPhotons_*_*',
+                                                                'keep *_calibratedElectrons_*_*',
+                                                                'keep *_calibratedPhotons_*_*',
+                                                                'keep *_egmGsfElectronIDs_*_*',
+                                                                'keep *_egmPhotonIDs_*_*')
+    
+
 process.outPath = cms.EndPath(process.egammaOutput)
 
 residualCorrFileName = None
 if options.isMiniAOD:
-    residualCorrFileName = process.calibratedPatElectrons.correctionFile.value()
+    try: 
+        residualCorrFileName = process.calibratedPatElectrons.correctionFile.value()
+    except AttributeError:
+        pass
 else:
-    residualCorrFileName = process.calibratedElectrons.correctionFile.value()
+    try:
+        residualCorrFileName = process.calibratedElectrons.correctionFile.value()
+    except AttributeError:
+        pass
+
 msgStr='''EgammaPostRecoTools:
   running with GT: {}
   running residual E corr: {}'''
