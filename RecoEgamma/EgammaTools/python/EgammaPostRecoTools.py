@@ -56,9 +56,9 @@ def _getEnergyCorrectionFile(era):
     if era=="2016-Legacy":
         return "EgammaAnalysis/ElectronTools/data/ScalesSmearings/Legacy2016_07Aug2017_FineEtaR9_v3_ele_unc"
     if era=="2016-Feb17ReMiniAOD":
-        raise RuntimeError('Error in postRecoEgammaTools, era 2016-Feb17ReMiniAOD is not currently implimented') 
+        raise RuntimeError('Error in postRecoEgammaTools, era 2016-Feb17ReMiniAOD is not currently implimented')
     if era=="2018-Prompt":
-        raise RuntimeError('Error in postRecoEgammaTools, era 2018-Prompt does not have energy corrections availible yet, runEnergyCorrections must be set to false') 
+        return "EgammaAnalysis/ElectronTools/data/ScalesSmearings/Run2018_Step2Closure_CoarseEtaR9Gain_v2"
     raise RuntimeError('Error in postRecoEgammaTools, era '+era+' not recognised. Allowed eras are 2017-Nov17ReReco, 2016-Legacy, 2016-Feb17ReMiniAOD')
 
 def _is80XRelease(era):
@@ -361,9 +361,7 @@ def setupEgammaPostRecoSeq(process,
             setupAllVIDIdsInModule(process,idmod,setupVIDPhotonSelection)
 
     if autoAdjustParams:
-        if era == "2018-Prompt" and runEnergyCorrections: 
-            print "EgammaPostRecoTools:\n  2018-Prompt does not yet have residual scales and smearings availible, setting runEnergyCorrections to False. To override, set autoAdjustParams = False"
-            runEnergyCorrections=False
+        pass #no auto adjustment needed
 
     if isMiniAOD:
         _setupEgammaPostRECOSequenceMiniAOD(process,applyEnergyCorrections=applyEnergyCorrections,applyVIDOnCorrectedEgamma=applyVIDOnCorrectedEgamma,era=era,runVID=runVID,runEnergyCorrections=runEnergyCorrections,applyEPCombBug=applyEPCombBug)
@@ -382,4 +380,50 @@ def setupEgammaPostRecoSeq(process,
         process.egammaPostRecoPatUpdatorSeq = cms.Sequence(process.egammaPostRecoPatUpdatorTask)
         process.egammaPostRecoSeq.insert(-1,process.egammaPostRecoPatUpdatorSeq)     
                        
+    return process
+
+
+def makeEgammaPATWithUserData(process,eleTag=None,phoTag=None,runVID=True,runEnergyCorrections=True,era="2017-Nov17ReReco",suffex="WithUserData"):
+    """
+    This function embeds the value maps into a pat::Electron,pat::Photon
+    This function is not officially supported by e/gamma and is on a best effort bais
+    eleTag and phoTag are type cms.InputTag
+    outputs new collection with {eleTag/phoTag}.moduleLabel + suffex 
+    """
+    from RecoEgamma.EgammaTools.egammaObjectModificationsInMiniAOD_cff import egamma_modifications,egamma8XLegacyEtScaleSysModifier,egamma8XObjectUpdateModifier
+    from RecoEgamma.EgammaTools.egammaObjectModifications_tools import makeVIDBitsModifier,makeVIDinPATIDsModifier,makeEnergyScaleAndSmearingSysModifier  
+    if runVID:
+        egamma_modifications.append(makeVIDBitsModifier(process,"egmGsfElectronIDs","egmPhotonIDs"))
+        egamma_modifications.append(makeVIDinPATIDsModifier(process,"egmGsfElectronIDs","egmPhotonIDs"))
+    else:
+        egamma_modifications = cms.VPSet() #reset all the modifications which so far are just VID
+    if _is80XRelease(era): 
+        egamma_modifications.append(egamma8XObjectUpdateModifier) #if we were generated in 80X, we need fill in missing data members in 94X
+    if runEnergyCorrections:
+        egamma_modifications.append(makeEnergyScaleAndSmearingSysModifier("calibratedElectrons","calibratedPhotons"))
+        egamma_modifications.append(egamma8XLegacyEtScaleSysModifier)
+    
+    process.egammaPostRecoPatUpdatorTask = cms.Task()
+
+    if eleTag:
+        modName = eleTag.moduleLabel+suffex
+        setattr(process,modName,cms.EDProducer("ModifiedElectronProducer",
+                                               src=eleTag,
+                                               modifierConfig = cms.PSet(
+                                                 modifications = egamma_modifications
+                                                 )      
+                                               ))
+        process.egammaPostRecoPatUpdatorTask.add(getattr(process,modName))
+
+    if phoTag:
+        modName = phoTag.moduleLabel+suffex
+        setattr(process,modName,cms.EDProducer("ModifiedPhotonProducer",
+                                               src=phoTag,
+                                               modifierConfig = cms.PSet(
+                                                 modifications = egamma_modifications
+                                                 )
+                                               )) 
+        process.egammaPostRecoPatUpdatorTask.add(getattr(process,modName))
+        
+    process.egammaPostRecoPatUpdatorSeq = cms.Sequence(process.egammaPostRecoPatUpdatorTask)
     return process
