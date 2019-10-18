@@ -1,0 +1,89 @@
+#Presented in skimAOD:
+EcalBadCalibSummer17Filter
+CSC_Halo_Filter
+	CSCTightHalo2015Filter_cfi
+	CSCTightHaloFilter_cfi
+	CSCTightHaloTrkMuUnvetoFilter_cfi
+	
+Global_Halo_Filter
+	globalTightHalo2016Filter_cfi
+	globalSuperTightHalo2016Filter_cfi
+HCAL_Noise_Filter
+	HBHENoiseFilterResultProducer_cfi
+	
+	
+RecoMET.METFilters.HcalStripHaloFilter_cfi
+
+
+VertexSelector
+
+RecoMET.METFilters.trackingFailureFilter_cfi
+RecoMET.METFilters.EcalDeadCellTriggerPrimitiveFilter_cfi
+RecoMET.METFilters.eeBadScFilter_cfi
+RecoMET.METFilters.BadChargedCandidateFilter_cfi
+RecoMET.METFilters.BadPFMuonFilter_cfi
+RecoMET.METFilters.BadChargedCandidateSummer16Filter_cfi
+RecoMET.METFilters.BadPFMuonSummer16Filter_cfi
+RecoMET.METFilters.EcalBadCalibFilter_cfi
+
+GoodVertexFilter
+RecoMET.METFilters.EcalDeadCellBoundaryEnergyFilter_cfi
+CandViewShallowCloneCombiner
+CandViewCountFilter
+
+
+
+_____Final____
+
+    process.BeamHaloId* #Uncomment this if you want to rerun the BeamHaloSummary. By default this line should remain commented
+   
+    process.primaryVertexFilter*
+    process.bunchSpacingProducer *
+    #process.condMETSelector *
+    process.metCounter* #uncomment this line to apply a met cut
+    process.CSCTightHaloFilter*
+    process.HBHENoiseFilterResultProducer* #produces bools    
+	#process.ApplyBaselineHBHENoiseFilter* 
+    process.EcalDeadCellTriggerPrimitiveFilter*
+    process.eeBadScFilter*
+    process.goodVertices*
+    process.trackingFailureFilter*
+    process.EcalDeadCellBoundaryEnergyFilter*
+    process.CSCTightHalo2015Filter*
+    process.CSCTightHaloTrkMuUnvetoFilter*
+    process.globalTightHalo2016Filter * 
+    process.globalSuperTightHalo2016Filter * 
+    process.HcalStripHaloFilter*
+    process.BadChargedCandidateFilter*
+    process.BadPFMuonFilter*
+    process.BadChargedCandidateSummer16Filter*
+    process.BadPFMuonSummer16Filter*
+    process.EcalBadCalibFilter*
+    process.metScanNtupleMaker ##CH: writes a flat tree
+	
+	
+	
+#Isabell Suggestions:
+	Drop:
+		filter_csc2015 - drop from Ntuple Maker
+		filter_badChCandOld
+		filter_badPFMuonOld
+
+#MET Filters Page:
+	Moriond 2018:
+		primary vertex filter ("Flag_goodVertices") 
+		beam halo filter ("Flag_globalTightHalo2016Filter") 
+		HBHE noise filter ("Flag_HBHENoiseFilter") 
+		HBHEiso noise filter ("Flag_HBHENoiseIsoFilter") 
+		ECAL TP filter ("Flag_EcalDeadCellTriggerPrimitiveFilter") 
+		Bad PF Muon Filter ("Flag_BadPFMuonFilter") 
+		Bad Charged Hadron Filter ("Flag_BadChargedCandidateFilter")
+		ee badSC noise filter ("Flag_eeBadScFilter") 
+		ECAL bad calibration filter ("Flag_ecalBadCalibFilter") 
+		
+#Akshansh Filters:
+
+	BadChargedCandidateFilter.cc
+	BadPFMuonFilter.cc
+	?? ECAL_filter
+
